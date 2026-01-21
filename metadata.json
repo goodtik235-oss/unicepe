@@ -1,0 +1,7 @@
+{
+  "name": "UNICEF Pakistan - School Gap Tracker",
+  "description": "A comprehensive portal for tracking and addressing educational infrastructure, WASH, and teaching gaps across Pakistan's provinces and districts.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
