@@ -2,9 +2,18 @@
 import { GoogleGenAI } from "@google/genai";
 import { SchoolIssue, Feedback } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const analyzeGaps = async (issues: SchoolIssue[], feedback: Feedback[]) => {
+  // Accessing the API key from the environment. 
+  // In Netlify, this must be set in Site Settings > Environment Variables
+  const apiKey = process.env.API_KEY;
+
+  if (!apiKey) {
+    console.error("API_KEY is not defined. Please set it in Netlify Environment Variables.");
+    return "Configuration Error: API Key is missing. Please check Netlify settings.";
+  }
+
+  const ai = new GoogleGenAI({ apiKey: apiKey });
+
   const prompt = `
     As an expert data analyst for UNICEF Pakistan, analyze the following school reported issues and community feedback.
     
@@ -33,6 +42,6 @@ export const analyzeGaps = async (issues: SchoolIssue[], feedback: Feedback[]) =
     return response.text || "Analysis failed to generate.";
   } catch (error) {
     console.error("Gemini analysis error:", error);
-    return "Error occurred while connecting to the AI service. Please try again later.";
+    return "Error occurred while connecting to the AI service. Please ensure your API_KEY is valid in Netlify.";
   }
 };
