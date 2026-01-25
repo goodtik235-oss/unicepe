@@ -3,8 +3,15 @@ import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { Caption } from "../types";
 
 const getAI = () => {
+  // Access the key injected by Vite during the Netlify build
   const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API_KEY not set");
+  
+  if (!apiKey) {
+    console.error("API Key is missing.");
+    throw new Error(
+      "API Key is missing. Please go to your Netlify Site Settings > Environment Variables and add a variable named 'API_KEY' with your Gemini API key."
+    );
+  }
   return new GoogleGenAI({ apiKey });
 };
 

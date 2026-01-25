@@ -4,15 +4,16 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   // Load environment variables from the current directory.
-  // Using '' as the third argument allows loading variables without the VITE_ prefix.
+  // The third argument '' tells Vite to load all env vars, not just those starting with VITE_
+  // This allows us to pick up 'API_KEY' set in the Netlify UI.
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
     plugins: [react()],
     define: {
-      'process.env': {
-        API_KEY: env.API_KEY || process.env.API_KEY
-      }
+      // We manually define process.env.API_KEY to ensure it is embedded
+      // into the code during the 'npm run build' process on Netlify.
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || process.env.API_KEY)
     }
   };
 });

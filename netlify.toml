@@ -3,6 +3,8 @@
   command = "npm run build"
   publish = "dist"
 
+# Handle React Router / Single Page App routing
+# This ensures that reloading a page like /dashboard doesn't give a 404
 [[redirects]]
   from = "/*"
   to = "/index.html"
