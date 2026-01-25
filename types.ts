@@ -1,20 +1,46 @@
 
+export interface Caption {
+  id: string;
+  start: number;
+  end: number;
+  text: string;
+}
+
+export enum ProcessingStatus {
+  IDLE = 'idle',
+  EXTRACTING_AUDIO = 'extracting_audio',
+  TRANSCRIBING = 'transcribing',
+  TRANSLATING = 'translating',
+  GENERATING_SPEECH = 'generating_speech',
+  RENDERING = 'rendering',
+  COMPLETED = 'completed',
+  ERROR = 'error'
+}
+
+export const SUPPORTED_LANGUAGES = [
+  { code: 'ur-PK', name: 'Urdu (Pakistan)' },
+  { code: 'en-US', name: 'English (US)' },
+  { code: 'es-ES', name: 'Spanish (Spain)' },
+  { code: 'fr-FR', name: 'French' },
+  { code: 'de-DE', name: 'German' },
+  { code: 'ar-SA', name: 'Arabic' },
+  { code: 'zh-CN', name: 'Chinese (Simplified)' },
+  { code: 'hi-IN', name: 'Hindi' },
+  { code: 'ja-JP', name: 'Japanese' },
+  { code: 'pt-BR', name: 'Portuguese (Brazil)' },
+];
+
 export enum Province {
-  PUNJAB = 'Punjab',
-  SINDH = 'Sindh',
-  KP = 'Khyber Pakhtunkhwa',
   BALOCHISTAN = 'Balochistan',
-  GB = 'Gilgit-Baltistan',
-  AJK = 'Azad Jammu & Kashmir',
-  ICT = 'Islamabad'
+  PUNJAB = 'Punjab',
+  KP = 'KP',
+  SINDH = 'Sindh'
 }
 
 export enum IssueCategory {
-  INFRASTRUCTURE = 'Infrastructure',
   WASH = 'WASH',
-  TEACHERS = 'Teachers/Staff',
-  MATERIALS = 'Learning Materials',
-  SAFETY = 'Security/Safety'
+  TEACHERS = 'Teachers',
+  INFRASTRUCTURE = 'Infrastructure'
 }
 
 export interface SchoolIssue {
@@ -25,20 +51,14 @@ export interface SchoolIssue {
   district: string;
   category: IssueCategory;
   description: string;
-  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  severity: string;
   reportedAt: string;
-  status: 'Reported' | 'In Progress' | 'Resolved';
+  status: string;
 }
 
 export interface Feedback {
   id: string;
-  authorType: 'Parent' | 'Teacher' | 'Student' | 'Community Member';
+  authorType: string;
   content: string;
   timestamp: string;
-}
-
-export interface AppState {
-  issues: SchoolIssue[];
-  feedback: Feedback[];
-  language: 'EN' | 'UR';
 }

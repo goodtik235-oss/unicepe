@@ -1,7 +1,5 @@
 {
-  "name": "UNICEF Pakistan - School Gap Tracker",
-  "description": "A comprehensive portal for tracking and addressing educational infrastructure, WASH, and teaching gaps across Pakistan's provinces and districts.",
-  "requestFramePermissions": [
-    "geolocation"
-  ]
+  "name": "AHA Studio - AI Video Localizer",
+  "description": "Professional AI-powered video localization studio. Transcribe, translate, dub, and burn captions directly in the browser using Gemini 2.5 Flash and Pro models.",
+  "requestFramePermissions": []
 }
