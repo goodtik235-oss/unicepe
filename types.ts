@@ -6,6 +6,12 @@ export interface Caption {
   text: string;
 }
 
+export interface CaptionStyle {
+  textColor: string;
+  backgroundColor: string;
+  fontSize: number; // 1 = base size
+}
+
 export enum ProcessingStatus {
   IDLE = 'idle',
   EXTRACTING_AUDIO = 'extracting_audio',
@@ -20,6 +26,12 @@ export enum ProcessingStatus {
 export const SUPPORTED_LANGUAGES = [
   { code: 'ur-PK', name: 'Urdu (Pakistan)' },
   { code: 'en-US', name: 'English (US)' },
+  { code: 'pa-PK', name: 'Punjabi' },
+  { code: 'ps-PK', name: 'Pashto' },
+  { code: 'sd-PK', name: 'Sindhi' },
+  { code: 'skr-PK', name: 'Saraiki' },
+  { code: 'bal-PK', name: 'Balochi' },
+  { code: 'hno-PK', name: 'Hindko' },
   { code: 'es-ES', name: 'Spanish (Spain)' },
   { code: 'fr-FR', name: 'French' },
   { code: 'de-DE', name: 'German' },
@@ -33,7 +45,7 @@ export const SUPPORTED_LANGUAGES = [
 export enum Province {
   BALOCHISTAN = 'Balochistan',
   PUNJAB = 'Punjab',
-  KP = 'KP',
+  KP = 'Khyber Pakhtunkhwa',
   SINDH = 'Sindh'
 }
 

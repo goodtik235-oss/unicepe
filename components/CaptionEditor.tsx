@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Caption } from '../types';
 import { Clock, Edit2 } from 'lucide-react';
 
@@ -11,14 +11,18 @@ interface CaptionEditorProps {
 }
 
 const CaptionEditor: React.FC<CaptionEditorProps> = ({ captions, currentTime, onUpdateCaption, onSeek }) => {
-  const activeRef = useRef<HTMLDivElement>(null);
+  const activeCaptionId = captions.find(c => currentTime >= c.start && currentTime <= c.end)?.id;
 
+  // Auto-scroll active caption into view
   useEffect(() => {
-    if (activeRef.current) {
-      activeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (activeCaptionId) {
+      const element = document.getElementById(`caption-${activeCaptionId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
-  }, [currentTime]);
-
+  }, [activeCaptionId]);
+  
   if (captions.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-slate-500 p-8 text-center">
@@ -43,7 +47,7 @@ const CaptionEditor: React.FC<CaptionEditorProps> = ({ captions, currentTime, on
           return (
             <div
               key={cap.id}
-              ref={isActive ? activeRef : null}
+              id={`caption-${cap.id}`}
               className={`p-4 rounded-2xl border transition-all duration-300 ${
                 isActive 
                   ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.15)]' 

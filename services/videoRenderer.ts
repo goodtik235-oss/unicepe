@@ -1,9 +1,10 @@
 
-import { Caption } from "../types";
+import { Caption, CaptionStyle } from "../types";
 
 export const renderVideoWithCaptions = async (
   videoSrc: string,
   captions: Caption[],
+  style: CaptionStyle,
   onProgress: (progress: number) => void,
   signal: AbortSignal,
   audioBlob: Blob | null
@@ -12,7 +13,7 @@ export const renderVideoWithCaptions = async (
     const video = document.createElement('video');
     video.src = videoSrc;
     video.crossOrigin = "anonymous";
-    video.muted = true; // We might handle audio separately
+    video.muted = true; 
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -26,14 +27,13 @@ export const renderVideoWithCaptions = async (
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // Audio Context setup for mixing if needed
+      // Audio Context setup
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const dest = audioCtx.createMediaStreamDestination();
       
       let sourceNode: AudioNode | null = null;
 
       if (audioBlob) {
-        // Use dubbed audio
         const arrayBuffer = await audioBlob.arrayBuffer();
         const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
         const bufferSource = audioCtx.createBufferSource();
@@ -41,27 +41,16 @@ export const renderVideoWithCaptions = async (
         bufferSource.connect(dest);
         bufferSource.start(0);
         sourceNode = bufferSource;
-      } else {
-         // Try to capture video audio if not muted and if possible
-         // Note: Capturing audio from a video element created via JS without DOM insertion 
-         // sometimes is restricted. For this prototype, if no dub, we rely on video.captureStream()
-         // but since we are drawing to canvas, we need to combine streams.
       }
 
-      // Stream from canvas
-      const canvasStream = canvas.captureStream(30); // 30 FPS
-      
-      // Combine tracks
+      const canvasStream = canvas.captureStream(30);
       const combinedTracks = [...canvasStream.getVideoTracks()];
       
       if (audioBlob) {
         combinedTracks.push(...dest.stream.getAudioTracks());
       } else {
-        // Attempt to get original audio
-        // Note: Cross-origin issues might block this if video not local
-        // Since we are using local file Blob URL, it should be fine.
-        // However, capturing audio from a non-playing video element is tricky.
-        // We will play the video.
+        // In a real app we'd capture video audio, but browser restrictions often block cross-origin video audio capture
+        // We'll proceed with silent video if no dub is provided for this prototype
       }
 
       const mimeTypes = [
@@ -74,7 +63,7 @@ export const renderVideoWithCaptions = async (
       
       const mediaRecorder = new MediaRecorder(new MediaStream(combinedTracks), {
         mimeType,
-        videoBitsPerSecond: 5000000 // 5 Mbps
+        videoBitsPerSecond: 5000000
       });
 
       const chunks: Blob[] = [];
@@ -85,13 +74,10 @@ export const renderVideoWithCaptions = async (
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: mimeType });
         resolve(blob);
-        // Cleanup
         audioCtx.close();
       };
 
       mediaRecorder.start();
-
-      // Playback loop
       video.play();
       
       const drawFrame = () => {
@@ -115,19 +101,18 @@ export const renderVideoWithCaptions = async (
         const currentCaption = captions.find(c => currentTime >= c.start && currentTime <= c.end);
 
         if (currentCaption) {
-          const fontSize = Math.max(24, canvas.height * 0.05);
+          const baseFontSize = canvas.height * 0.05; // 5% of height
+          const fontSize = baseFontSize * style.fontSize;
+          
           ctx.font = `bold ${fontSize}px Inter, sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
-          ctx.fillStyle = 'white';
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = fontSize * 0.1;
           
           const text = currentCaption.text;
           const x = canvas.width / 2;
           const y = canvas.height - (canvas.height * 0.1);
           
-          // Simple word wrap
+          // Measure text for wrapping
           const maxWidth = canvas.width * 0.8;
           const words = text.split(' ');
           let line = '';
@@ -145,11 +130,38 @@ export const renderVideoWithCaptions = async (
             }
           }
           lines.push(line);
+          lines.reverse();
 
-          // Draw lines
-          lines.reverse().forEach((l, i) => {
-             const lineY = y - (i * fontSize * 1.2);
-             ctx.strokeText(l, x, lineY);
+          // Draw background if needed
+          if (style.backgroundColor !== 'transparent') {
+             const padding = fontSize * 0.4;
+             const lineHeight = fontSize * 1.3;
+             const totalHeight = lines.length * lineHeight;
+             const boxBottom = y + (fontSize * 0.2); // slight offset
+             const boxTop = boxBottom - totalHeight - padding;
+             
+             // Simplistic box width calculation based on longest line
+             let maxLineWidth = 0;
+             lines.forEach(l => {
+                maxLineWidth = Math.max(maxLineWidth, ctx.measureText(l).width);
+             });
+             const boxWidth = maxLineWidth + (padding * 3);
+             
+             ctx.fillStyle = style.backgroundColor;
+             ctx.fillRect(x - (boxWidth / 2), boxTop, boxWidth, totalHeight + padding);
+          }
+
+          // Draw Text
+          ctx.fillStyle = style.textColor;
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = fontSize * 0.05;
+          
+          lines.forEach((l, i) => {
+             const lineY = y - (i * fontSize * 1.3);
+             if (style.textColor === '#FFFFFF' || style.textColor === 'white') {
+                 // Add stroke only for white text visibility
+                 ctx.strokeText(l, x, lineY);
+             }
              ctx.fillText(l, x, lineY);
           });
         }

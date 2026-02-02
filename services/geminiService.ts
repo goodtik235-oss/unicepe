@@ -3,16 +3,9 @@ import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { Caption } from "../types";
 
 const getAI = () => {
-  // Access the key injected by Vite during the Netlify build
-  const apiKey = process.env.API_KEY;
-  
-  if (!apiKey) {
-    console.error("API Key is missing.");
-    throw new Error(
-      "API Key is missing. Please go to your Netlify Site Settings > Environment Variables and add a variable named 'API_KEY' with your Gemini API key."
-    );
-  }
-  return new GoogleGenAI({ apiKey });
+  // Use the API key directly from process.env as per guidelines.
+  // We assume process.env.API_KEY is valid and configured.
+  return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
 export const transcribeAudio = async (audioBase64: string, signal?: AbortSignal): Promise<Caption[]> => {
@@ -27,7 +20,6 @@ export const transcribeAudio = async (audioBase64: string, signal?: AbortSignal)
     - "text": the transcribed text
     
     Ensure the captions are well-segmented by natural pauses and sentences.
-    Do not wrap the JSON in markdown code blocks. Just return the raw JSON.
   `;
 
   const response = await ai.models.generateContent({
@@ -76,15 +68,26 @@ export const translateCaptions = async (captions: Caption[], targetLanguage: str
     
     Input JSON:
     ${JSON.stringify(captions)}
-    
-    Return the translated JSON array.
   `;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: prompt,
     config: {
-      responseMimeType: 'application/json'
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            start: { type: Type.NUMBER },
+            end: { type: Type.NUMBER },
+            text: { type: Type.STRING }
+          },
+          required: ['id', 'start', 'end', 'text']
+        }
+      }
     }
   });
 

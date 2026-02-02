@@ -1,14 +1,15 @@
 
 import React, { useRef, useEffect } from 'react';
-import { Caption } from '../types';
+import { Caption, CaptionStyle } from '../types';
 
 interface VideoPlayerProps {
   src: string | null;
   captions: Caption[];
+  style?: CaptionStyle;
   onTimeUpdate: (time: number) => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, captions, onTimeUpdate }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, captions, style, onTimeUpdate }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [currentCaption, setCurrentCaption] = React.useState<string | null>(null);
 
@@ -30,24 +31,36 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, captions, onTimeUpdate }
 
   if (!src) {
     return (
-      <div className="aspect-video bg-slate-900 rounded-[2.5rem] border border-slate-800 flex items-center justify-center text-slate-500 flex-col shadow-2xl">
-         <p className="font-medium">No video loaded</p>
-         <p className="text-sm opacity-50 mt-2">Upload a video to begin localization</p>
+      <div className="w-full h-full bg-slate-950 flex items-center justify-center text-slate-500 flex-col shadow-2xl relative">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 to-slate-950"></div>
+          <p className="font-medium relative z-10">No video loaded</p>
       </div>
     );
   }
 
+  // Default styles
+  const overlayStyle = style || { textColor: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.6)', fontSize: 1 };
+
   return (
-    <div className="relative aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl group border border-slate-800">
+    <div className="w-full h-full bg-black flex items-center justify-center relative group">
       <video
         ref={videoRef}
         src={src}
         controls
-        className="w-full h-full object-contain"
+        className="max-h-full max-w-full object-contain"
       />
       {currentCaption && (
-        <div className="absolute bottom-16 left-0 right-0 text-center pointer-events-none p-4">
-          <span className="inline-block bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-xl text-lg md:text-xl font-medium shadow-lg">
+        <div className="absolute bottom-[10%] left-0 right-0 text-center pointer-events-none p-4 w-full flex justify-center">
+          <span 
+            className="inline-block px-4 py-2 rounded-lg font-medium shadow-sm break-words max-w-[80%]"
+            style={{
+                color: overlayStyle.textColor,
+                backgroundColor: overlayStyle.backgroundColor,
+                fontSize: `${1.2 * overlayStyle.fontSize}rem`,
+                lineHeight: 1.4,
+                textShadow: overlayStyle.textColor === '#FFFFFF' ? '0px 1px 2px rgba(0,0,0,0.8)' : 'none'
+            }}
+          >
             {currentCaption}
           </span>
         </div>
